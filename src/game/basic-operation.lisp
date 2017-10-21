@@ -54,7 +54,6 @@
                                              :initial-element nil)))
 
 (defun.ps+ check-in-field-p (field x y)
-  (check-type field field)
   (with-slots (x-count y-count) field
     (assert (and (>= x 0) (< x x-count)
                  (>= y 0) (< y y-count)))))
@@ -72,22 +71,23 @@
   (setf (get-block-state% field x y) state))
 
 (defun.ps+ delete-completed-lines (field)
-  (labels ((test-completed-p (line)
-             (every (lambda (state) state) line)))
-    (with-slots (x-count y-count block-state-array) field
-      (let ((completed-index-list
-             (loop for i
-                from 0 below y-count
-                when (test-completed-p (aref block-state-array i))
-                collect i)))
-        ;; naive implementation...
-        (dolist (i completed-index-list)
-          (loop for y from i below (1- y-count)
-             do (loop for x from 0 below x-count
-                   do (set-block-state field x y (get-block-state field x (1+ y)))))
-          (loop for x from 0 below x-count
-             do (set-block-state field x (1- y-count) nil)))
-        (length completed-index-list)))))
+  (with-slots (x-count y-count block-state-array) field
+    (let ((completed-index-list
+           (loop for y
+              from 0 below y-count
+              when (= (length (loop for x from 0 below x-count
+                                 when (not (get-block-state field x y))
+                                 collect t))
+                      0)
+              collect y)))
+      ;; naive implementation...
+      (dolist (i completed-index-list)
+        (loop for y from i below (1- y-count)
+           do (loop for x from 0 below x-count
+                 do (set-block-state field x y (get-block-state field x (1+ y)))))
+        (loop for x from 0 below x-count
+           do (set-block-state field x (1- y-count) nil)))
+      (length completed-index-list))))
 
 ;; --- piece functions --- ;;
 
@@ -104,14 +104,18 @@
 
 (defun.ps+ init-piece (field)
   (let* ((piece (make-piece :x (/ (field-x-count field) 2)
+                            :y 0 ; temporal value
                             :static-shape (nth (random (length *static-shape-list*))
                                                *static-shape-list*)
                             :rotate-count (random 4)))
          (global-shape (calc-global-piece-shape piece))
-         (min-y (min (mapcar (lambda (point) (cadr point))
-                             global-shape))))
+         (min-y (cadr (aref global-shape 0))))
+    (loop for i from 1 below (length global-shape)
+       do (let ((y (cadr (aref global-shape i))))
+            (when (< y min-y)
+              (setf min-y y))))
     (setf (piece-y piece)
-          (+ (field-y-count field) min-y))
+          (- (field-y-count field) min-y 1))
     ;; If the piece intersects to field from first,
     ;; it's gameover!!
     (unless (intersect-piece-to-field-p field piece)
@@ -130,7 +134,6 @@
           shape))
 
 (defun.ps+ calc-global-piece-shape (piece)
-  (check-type piece piece)
   (with-slots (static-shape x y rotate-count) piece
     (let ((result (rotate-static-shape static-shape rotate-count)))
       (dolist (pnt result)
@@ -151,7 +154,8 @@
                (and (>= x 0) (< x (field-x-count field))
                     ;; Note: Can exceed top when moving
                     (>= y 0)
-                    (not (get-block-state field x y)))))
+                    (or (>= y (field-y-count field))
+                        (not (get-block-state field x y))))))
            shape)))
 
 (defun.ps+ move-piece-to (field piece direction)
@@ -169,7 +173,8 @@ Return t if the piece was moved, otherwize nil"
   (some (lambda (point)
           (let ((x (car point))
                 (y (cadr point)))
-            (get-block-state field x y)))
+            (when (< y (field-y-count field))
+              (get-block-state field x y))))
         (calc-global-piece-shape piece)))
 
 (defun.ps+ rotate-piece (field piece added-rotate-count)
@@ -210,7 +215,7 @@ Return nil if game over situation."
                        (push point pending-blocks))))
                  pending-blocks)))
       (let* ((pending-blocks
-              (pin-all-blocks-to-field field (calc-global-point piece)))
+              (pin-all-blocks-to-field field (calc-global-piece-shape piece)))
              (count-deleted (delete-completed-lines field))
              (rest-blocks
               (pin-all-blocks-to-field field pending-blocks count-deleted)))

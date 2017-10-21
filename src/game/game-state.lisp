@@ -8,9 +8,12 @@
            :init-game-state
 
            :game-state
+           :start-process
            :game-state-start-process
            :game-state-process
-           :game-state-end-process))
+           :process
+           :game-state-end-process
+           :end-process))
 (in-package :clw-tetris.game.game-state)
 
 (defstruct.ps+ game-state

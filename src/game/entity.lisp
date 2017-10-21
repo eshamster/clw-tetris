@@ -24,7 +24,10 @@
     (register-next-frame-func (lambda ()
                                 (delete-ecs-entity entity)))
     (if (pin-piece-to-field field piece)
-        (add-ecs-entity-to-buffer (make-piece-entity field))
+        (let ((piece-entity (make-piece-entity field)))
+          (if piece-entity
+              (add-ecs-entity-to-buffer piece-entity)
+              (set-entity-param field :gameover-p t)))
         (set-entity-param field :gameover-p t))))
 
 ;; TODO: Implement continuous move when continuing to press key
@@ -70,26 +73,29 @@
             (dolist (point shape)
               (let ((index (+ (car point)
                               (* (cadr point) (field-x-count field)))))
-                (assert (< index (* (field-x-count field)
-                                    (field-y-count field))))
-                (enable-model-2d field-entity
-                                 :target-model-2d (aref block-model-array index))))))))))
+                (When (< index (* (field-x-count field)
+                                  (field-y-count field)))
+                  (enable-model-2d field-entity
+                                   :target-model-2d (aref block-model-array index)))))))))))
 
 ;; --- main --- ;;
 
 (defun.ps+ update-field (field-entity)
-  (update-field-draw field-entity)
   (do-ecs-entities entity
     (when (has-entity-tag entity :piece)
       (process-tetris-input entity)
-      (fall-in-natural entity))))
+      (fall-in-natural entity)))
+  (update-field-draw field-entity))
 
 (defun.ps+ make-piece-entity (field)
   (let ((entity (make-ecs-entity)))
     (add-entity-tag entity :piece)
     (add-ecs-component-list
      entity
-     (init-piece field))
+     (init-piece field)
+     (init-entity-params :field field
+                         :rest-intv 60
+                         :intv 60))
     entity))
 
 (defun.ps+ make-field-entity (&key x-count y-count)
@@ -102,13 +108,14 @@
         (block-margin 2))
     (dotimes (i (* x-count y-count))
       (let* ((x (mod i x-count))
-             (y (/ i x-count))
+             (y (floor (/ i x-count)))
              (model (make-model-2d
                      :model (make-solid-rect :width (- block-width (* block-margin 2))
-                                             :height (- block-height (* block-height 2))
+                                             :height (- block-height (* block-margin 2))
                                              :color #xeeeeee)
                      :offset (make-point-2d :x (+ (* block-width x) block-margin)
-                                            :y (+ (* block-height y) block-margin)))))
+                                            :y (+ (* block-height y) block-margin))
+                     :depth 0)))
         (setf (aref block-model-array i) model)
         (add-ecs-component model entity)))
     (add-ecs-component-list
@@ -118,5 +125,9 @@
      (make-point-2d :x 10 :y 10)
      (init-entity-params :block-model-array block-model-array
                          :gameover-p nil)
-     (make-script-2d :func #'update-field))
+     (make-script-2d :func #'update-field)
+     (make-model-2d :model (make-solid-rect :width (* x-count block-width)
+                                            :height (* y-count block-height)
+                                            :color #x222222)
+                    :depth -10))
     entity))
