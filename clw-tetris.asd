@@ -28,7 +28,8 @@
   :components ((:module "src/game"
                 :serial t
                 :components
-                ((:file "game-state")
+                ((:file "basic-operation")
+                 (:file "game-state")
                  (:file "tetris-state")
                  (:file "game")))
                (:module "src"
