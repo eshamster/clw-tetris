@@ -193,6 +193,8 @@ Return t if the piece was moved, otherwize nil"
         t))))
 
 (defun.ps+ pin-piece-to-field (field piece)
+  "Pin the piece to the field. After pinning, delete completed lines.
+Return nil if game over situation."
   (with-slots (y-count) field
     (labels ((pin-block-to-field (field x y)
                (when (< y y-count)
@@ -212,5 +214,4 @@ Return t if the piece was moved, otherwize nil"
              (count-deleted (delete-completed-lines field))
              (rest-blocks
               (pin-all-blocks-to-field field pending-blocks count-deleted)))
-        ;; return nil if gameover
         (= (length rest-blocks) 0)))))
