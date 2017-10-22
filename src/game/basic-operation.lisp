@@ -81,13 +81,15 @@
                       0)
               collect y)))
       ;; naive implementation...
-      (dolist (i completed-index-list)
-        (loop for y from i below (1- y-count)
-           do (loop for x from 0 below x-count
-                 do (set-block-state field x y (get-block-state field x (1+ y)))))
-        (loop for x from 0 below x-count
-           do (set-block-state field x (1- y-count) nil)))
-      (length completed-index-list))))
+      (let ((delete-count 0))
+        (dolist (i completed-index-list)
+          (loop for y from (- i delete-count) below (1- y-count)
+             do (loop for x from 0 below x-count
+                   do (set-block-state field x y (get-block-state field x (1+ y)))))
+          (loop for x from 0 below x-count
+             do (set-block-state field x (1- y-count) nil))
+          (incf delete-count))
+        delete-count))))
 
 ;; --- piece functions --- ;;
 
