@@ -102,7 +102,9 @@
       ;; |-
       ((0 -1) (0 0) (1 0) (0 1))
       ;; __|
-      ((-2 0) (-1 0) (0 0) (0 1))))
+      ((-2 0) (-1 0) (0 0) (0 1))
+      ;; =
+      ((0 0) (0 1) (1 0) (1 1))))
 
 (defun.ps+ init-piece (field)
   (let* ((piece (make-piece :x (/ (field-x-count field) 2)
@@ -123,6 +125,7 @@
     (unless (intersect-piece-to-field-p field piece)
       piece)))
 
+;; TODO: Don't rotate the rect shape.
 (defun.ps+ rotate-static-shape (shape rotate-count)
   (mapcar (lambda (point)
             (let ((x (car point))
