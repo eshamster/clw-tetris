@@ -30,20 +30,31 @@
               (set-entity-param field :gameover-p t)))
         (set-entity-param field :gameover-p t))))
 
+(defun.ps+ move-piece-by-input (entity piece field)
+  (labels ((require-move-p (key-name)
+             (is-key-down-now key-name))
+           (move-if-required (key-name move-direction)
+             (when (require-move-p key-name)
+               (move-piece-to field piece move-direction))))
+    (move-if-required :left :left)
+    (move-if-required :right :right)
+    (when (require-move-p :down)
+      (down-piece-entity entity :piece piece :field field))))
+
+(defun.ps+ rotate-piece-by-input (entity piece field)
+  (declare (ignore entity))
+  (when (is-key-down-now :a)
+    (rotate-piece field piece -1))
+  (when (is-key-down-now :c)
+    (rotate-piece field piece 1)))
+
 ;; TODO: Implement continuous move when continuing to press key
 ;; TODO: Rotate piece
 (defun.ps+ process-tetris-input (entity)
   (with-ecs-components (piece) entity
     (let ((field (get-entity-param entity :field)))
-      (labels ((require-move-p (key-name)
-                 (is-key-down-now key-name))
-               (move-if-required (key-name move-direction)
-                 (when (require-move-p key-name)
-                   (move-piece-to field piece move-direction))))
-        (move-if-required :left :left)
-        (move-if-required :right :right)
-        (when (require-move-p :down)
-          (down-piece-entity entity :piece piece :field field))))))
+      (move-piece-by-input entity piece field)
+      (rotate-piece-by-input entity piece field))))
 
 (defun.ps+ fall-in-natural (entity)
   (when (<= (set-entity-param entity :rest-intv

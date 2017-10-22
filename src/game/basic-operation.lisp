@@ -127,9 +127,9 @@
                   (y (cadr point)))
               (case (mod rotate-count 4)
                 (0 (list x y))
-                (1 (list y x))
+                (1 (list y (* -1 x)))
                 (2 (list (* -1 x) (* -1 y)))
-                (3 (list (* -1 y) (* -1 x)))
+                (3 (list (* -1 y) x))
                 (t (error "Invalid rotate-count: ~D" rotate-count)))))
           shape))
 
