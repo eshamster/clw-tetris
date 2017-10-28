@@ -49,7 +49,6 @@
     (rotate-piece field piece 1)))
 
 ;; TODO: Implement continuous move when continuing to press key
-;; TODO: Rotate piece
 (defun.ps+ process-tetris-input (entity)
   (with-ecs-components (piece) entity
     (let ((field (get-entity-param entity :field)))

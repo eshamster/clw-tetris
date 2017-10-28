@@ -19,6 +19,8 @@
            :piece-y
            :piece-rotate-count
 
+           :rotate-static-shape
+
            :calc-global-piece-shape
            :move-piece-to
            :rotate-piece
