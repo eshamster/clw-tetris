@@ -16,12 +16,6 @@
                 (:include game-state
                           (start-process
                            (lambda ()
-                             (LET* ((field-entity (make-field-entity
-                                                   :x-count 10
-                                                   :y-count 10))
-                                    (field (get-ecs-component 'field field-entity)))
-                               (assert field)
-                               (add-ecs-entity field-entity)
-                               (add-ecs-entity (make-piece-entity field)))
+                             (init-tetris-entities)
                              t))
                           (process (lambda () nil)))))
