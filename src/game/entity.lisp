@@ -21,55 +21,66 @@
 
 ;; --- moving --- ;;
 
-(defun.ps+ down-piece-entity (entity &key piece field)
-  (unless piece
-    (setf piece (get-ecs-component 'piece entity)))
-  (unless field
-    (setf field (get-entity-param entity :field)))
-  (assert piece)
-  (assert field)
-  (set-entity-param entity :rest-intv
-                    (get-entity-param entity :intv))
-  (unless (move-piece-to field piece :down)
-    (register-next-frame-func (lambda ()
-                                (delete-ecs-entity entity)))
-    (if (pin-piece-to-field field piece)
-        (let ((piece-entity (make-piece-entity field)))
-          (if piece-entity
-              (add-ecs-entity-to-buffer piece-entity)
-              (set-entity-param field :gameover-p t)))
-        (set-entity-param field :gameover-p t))))
+(defun.ps+ process-with-field-and-piece (field-entity fn-process)
+  (let ((piece-entity (get-entity-param field-entity :current-piece)))
+    (with-ecs-components (field) field-entity
+      (with-ecs-components (piece) piece-entity
+        (funcall fn-process field piece)))))
 
-(defun.ps+ move-piece-by-input (entity piece field)
+(defun.ps+ down-piece-entity (field-entity)
+  (check-entity-tags field-entity :field)
+  (let ((piece-entity (get-entity-param field-entity :current-piece)))
+    (set-entity-param piece-entity :rest-intv
+                      (get-entity-param piece-entity :intv))
+    (process-with-field-and-piece
+     field-entity
+     (lambda (field piece)
+       (unless (move-piece-to field piece :down)
+         (register-next-frame-func (lambda ()
+                                     (delete-ecs-entity piece-entity)))
+         ;; TODO: Test if the next piece can set to the field
+         (if (pin-piece-to-field field piece)
+             (let ((next-piece-entity (get-entity-param field-entity :next-piece)))
+               (add-ecs-entity-to-buffer next-piece-entity)
+               (set-entity-param field-entity :current-piece next-piece-entity)
+               (set-entity-param field-entity :next-piece
+                                 (make-piece-entity field)))
+             (set-entity-param field-entity :gameover-p t)))))))
+
+(defun.ps+ move-piece-by-input (field-entity)
   (labels ((require-move-p (key-name)
              (is-key-down-now key-name))
            (move-if-required (key-name move-direction)
              (when (require-move-p key-name)
-               (move-piece-to field piece move-direction))))
+               (process-with-field-and-piece
+                field-entity
+                (lambda (field piece)
+                  (move-piece-to field piece move-direction))))))
     (move-if-required :left :left)
     (move-if-required :right :right)
     (when (require-move-p :down)
-      (down-piece-entity entity :piece piece :field field))))
+      (down-piece-entity field-entity))))
 
-(defun.ps+ rotate-piece-by-input (entity piece field)
-  (declare (ignore entity))
-  (when (is-key-down-now :a)
-    (rotate-piece field piece -1))
-  (when (is-key-down-now :c)
-    (rotate-piece field piece 1)))
+(defun.ps+ rotate-piece-by-input (field-entity)
+  (process-with-field-and-piece
+   field-entity
+   (lambda (field piece)
+     (when (is-key-down-now :a)
+       (rotate-piece field piece -1))
+     (when (is-key-down-now :c)
+       (rotate-piece field piece 1)))))
 
 ;; TODO: Implement continuous move when continuing to press key
-(defun.ps+ process-tetris-input (entity)
-  (with-ecs-components (piece) entity
-    (let ((field (get-entity-param entity :field)))
-      (move-piece-by-input entity piece field)
-      (rotate-piece-by-input entity piece field))))
+(defun.ps+ process-tetris-input (field-entity)
+  (move-piece-by-input field-entity)
+  (rotate-piece-by-input field-entity))
 
-(defun.ps+ fall-in-natural (entity)
-  (when (<= (set-entity-param entity :rest-intv
-                              (1- (get-entity-param entity :rest-intv)))
-            0)
-    (down-piece-entity entity)))
+(defun.ps+ fall-in-natural (field-entity)
+  (let ((piece-entity (get-entity-param field-entity :current-piece)))
+    (when (<= (set-entity-param piece-entity :rest-intv
+                                (1- (get-entity-param piece-entity :rest-intv)))
+              0)
+      (down-piece-entity field-entity))))
 
 ;; --- drawing --- ;;
 
@@ -173,9 +184,7 @@
      entity
      field
      (make-point-2d :x x-offset :y y-offset)
-     (init-entity-params :block-model-array block-model-array
-                         :gameover-p nil
-                         :next-piece (make-piece-entity field))
+     (init-entity-params :block-model-array block-model-array)
      (make-script-2d :func fn-script)
      (make-model-2d :model (make-solid-rect :width (* x-count block-width)
                                             :height (* y-count block-height)
@@ -203,10 +212,8 @@
 ;; - field -
 (defun.ps+ update-field (field-entity)
   (check-entity-tags field-entity :field)
-  (do-ecs-entities entity
-    (when (has-entity-tag entity :piece)
-      (process-tetris-input entity)
-      (fall-in-natural entity)))
+  (process-tetris-input field-entity)
+  (fall-in-natural field-entity)
   (update-field-draw field-entity #'calc-block-exist-array-of-field))
 
 (defun.ps+ make-field-entity (&key x-count y-count)
@@ -216,6 +223,10 @@
                  :x-offset 10 :y-offset 10
                  :fn-script #'update-field)))
     (add-entity-tag entity :field)
+    (with-ecs-components (field) entity
+      (set-entity-param entity :current-piece (make-piece-entity field))
+      (set-entity-param entity :next-piece (make-piece-entity field))
+      (set-entity-param entity :gameover-p nil))
     entity))
 
 ;; - initalize all entities -
@@ -227,5 +238,5 @@
          (next-piece-area (make-next-piece-area-entity 300 300 field-entity)))
     (assert field)
     (add-ecs-entity field-entity)
-    (add-ecs-entity (make-piece-entity field))
+    (add-ecs-entity (get-entity-param field-entity :current-piece))
     (add-ecs-entity next-piece-area field-entity)))
