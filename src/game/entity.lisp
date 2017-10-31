@@ -102,28 +102,27 @@
 
 (defun.ps+ calc-block-exist-array-of-field (field-entity)
   (check-entity-tags field-entity :field)
-  (let* ((field (get-ecs-component 'field field-entity))
-         (x-count (field-x-count field))
-         (y-count (field-y-count field))
-         (result-array (make-array (* x-count y-count)
-                                   :initial-element nil)))
-    (assert field)
-    ;; check static state
-    (loop for i from 0 below (* x-count y-count)
-       do (when (aref (field-block-state-array field) i)
-            (setf (aref result-array i) t)))
-    ;; check pieces
-    (do-ecs-entities entity
-      (when (has-entity-tag entity :piece)
-        (with-ecs-components (piece) entity
-          (let ((shape (calc-global-piece-shape piece)))
-            (dolist (point shape)
-              (let ((index (+ (car point)
-                              (* (cadr point) (field-x-count field)))))
-                (When (< index (* (field-x-count field)
-                                  (field-y-count field)))
-                  (setf (aref result-array index) t))))))))
-    result-array))
+  (process-with-field-and-piece
+   field-entity
+   (lambda (field piece)
+     (let* ((x-count (field-x-count field))
+            (y-count (field-y-count field))
+            (result-array (make-array (* x-count y-count)
+                                      :initial-element nil)))
+       (assert field)
+       ;; check static state
+       (loop for i from 0 below (* x-count y-count)
+          do (when (aref (field-block-state-array field) i)
+               (setf (aref result-array i) t)))
+       ;; check pieces
+       (let ((shape (calc-global-piece-shape piece)))
+         (dolist (point shape)
+           (let ((index (+ (car point)
+                           (* (cadr point) (field-x-count field)))))
+             (When (< index (* (field-x-count field)
+                               (field-y-count field)))
+               (setf (aref result-array index) t)))))
+       result-array))))
 
 (defun.ps+ update-field-draw (entity fn-calc-block-exist-array)
   (check-entity-tags entity :piece-display)
