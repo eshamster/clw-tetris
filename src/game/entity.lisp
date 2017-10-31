@@ -19,6 +19,11 @@
 (defmacro.ps+ get-param (&rest keys)
   `(get-layered-hash *global-params* ,@keys))
 
+;; --- gaming --- ;;
+
+(defun.ps+ change-field-entity-to-gameover (field-entity)
+  (set-entity-param field-entity :gameover-p t))
+
 ;; --- moving --- ;;
 
 (defun.ps+ process-with-field-and-piece (field-entity fn-process)
@@ -38,14 +43,16 @@
        (unless (move-piece-to field piece :down)
          (register-next-frame-func (lambda ()
                                      (delete-ecs-entity piece-entity)))
-         ;; TODO: Test if the next piece can set to the field
          (if (pin-piece-to-field field piece)
              (let ((next-piece-entity (get-entity-param field-entity :next-piece)))
                (add-ecs-entity-to-buffer next-piece-entity)
                (set-entity-param field-entity :current-piece next-piece-entity)
                (set-entity-param field-entity :next-piece
-                                 (make-piece-entity field)))
-             (set-entity-param field-entity :gameover-p t)))))))
+                                 (make-piece-entity field))
+               (with-ecs-components ((next-piece piece)) next-piece-entity
+                 (when (intersect-piece-to-field-p field next-piece)
+                   (change-field-entity-to-gameover field-entity))))
+             (change-field-entity-to-gameover field-entity)))))))
 
 (defun.ps+ move-piece-by-input (field-entity)
   (labels ((require-move-p (key-name)
@@ -211,8 +218,9 @@
 ;; - field -
 (defun.ps+ update-field (field-entity)
   (check-entity-tags field-entity :field)
-  (process-tetris-input field-entity)
-  (fall-in-natural field-entity)
+  (unless (get-entity-param field-entity :gameover-p)
+    (process-tetris-input field-entity)
+    (fall-in-natural field-entity))
   (update-field-draw field-entity #'calc-block-exist-array-of-field))
 
 (defun.ps+ make-field-entity (&key x-count y-count)

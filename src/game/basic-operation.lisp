@@ -25,6 +25,7 @@
            :move-piece-to
            :rotate-piece
 
+           :intersect-piece-to-field-p
            :pin-piece-to-field))
 (in-package :clw-tetris.game.basic-operation)
 
@@ -122,10 +123,7 @@
               (setf min-y y))))
     (setf (piece-y piece)
           (- (field-y-count field) min-y 1))
-    ;; If the piece intersects to field from first,
-    ;; it's gameover!!
-    (unless (intersect-piece-to-field-p field piece)
-      piece)))
+    piece))
 
 ;; TODO: Don't rotate the rect shape.
 (defun.ps+ rotate-static-shape (shape rotate-count)
