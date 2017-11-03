@@ -14,7 +14,9 @@
     (convert-to-layered-hash
      (:block (:width 20
               :height 20
-              :margin 2))))
+              :margin 2)
+      :input (:first-intv 15
+              :intv 4))))
 
 (defmacro.ps+ get-param (&rest keys)
   `(get-layered-hash *global-params* ,@keys))
@@ -56,7 +58,12 @@
 
 (defun.ps+ move-piece-by-input (field-entity)
   (labels ((require-move-p (key-name)
-             (is-key-down-now key-name))
+             (let ((count (key-down-count key-name))
+                   (first-intv (get-param :input :first-intv)))
+               (or (= count 1)
+                   (and (> count (1+ first-intv))
+                        (= 0 (mod (- count 1 first-intv)
+                                  (get-param :input :intv)))))))
            (move-if-required (key-name move-direction)
              (when (require-move-p key-name)
                (process-with-field-and-piece
