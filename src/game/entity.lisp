@@ -84,7 +84,6 @@
      (when (is-key-down-now :c)
        (rotate-piece field piece 1)))))
 
-;; TODO: Implement continuous move when continuing to press key
 (defun.ps+ process-tetris-input (field-entity)
   (move-piece-by-input field-entity)
   (rotate-piece-by-input field-entity))
