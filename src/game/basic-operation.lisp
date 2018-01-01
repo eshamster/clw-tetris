@@ -15,6 +15,7 @@
            :piece
            :init-piece
            :clone-piece
+           :copy-piece-to
            :piece-static-shape
            :piece-x
            :piece-y
@@ -45,6 +46,14 @@
     static-shape x y rotate-count)
 
 ;; Because static-shape never be modified, shallow-copying is enough.
+(defun.ps+ copy-piece-to (dst src)
+  (macrolet ((set-param (param)
+               `(setf (,param dst) (,param src))))
+    (set-param piece-static-shape)
+    (set-param piece-x)
+    (set-param piece-y)
+    (set-param piece-rotate-count)))
+
 (defun.ps+ clone-piece (piece)
   (with-slots (static-shape x y rotate-count) piece
     (make-piece :static-shape static-shape
@@ -175,7 +184,9 @@ Return t if the piece was moved, otherwize nil"
       (ecase direction
         (:down (decf y))
         (:right (incf x))
-        (:left (decf x))))
+        (:left (decf x))
+        (:there ; do nothing
+         )))
     t))
 
 (defun.ps+ intersect-piece-to-field-p (field piece)

@@ -15,7 +15,8 @@
                 :rotate-piece
                 :field)
   (:import-from :clw-tetris.game.entity
-                :process-with-field-and-piece))
+                :process-with-field-and-piece
+                :warp-piece-to))
 (in-package :clw-tetris.game.mouse)
 
 (defvar.ps+ *normal-block-frame-color* #x00ffff)
@@ -83,15 +84,21 @@
                             *normal-block-frame-color*
                             *ng-block-frame-color*))))
 
-(defun.ps+ update-block-frame (mouse-entity)
-  (let* ((models (get-entity-param mouse-entity :models))
-         (field-entity (get-field-entity))
-         (piece-entity (get-entity-param field-entity :current-piece)))
+(defun.ps+ make-piece-from-mouse-point (field-entity)
+  (let ((piece-entity (get-entity-param field-entity :current-piece)))
     (with-ecs-components (piece) piece-entity
       (let ((cloned-piece (clone-piece piece)))
         (with-slots (x y) (calc-mouse-point-on-field)
           (setf (piece-x cloned-piece) x
                 (piece-y cloned-piece) y))
+        cloned-piece))))
+
+(defun.ps+ update-block-frame (mouse-entity)
+  (let* ((models (get-entity-param mouse-entity :models))
+         (field-entity (get-field-entity))
+         (piece-entity (get-entity-param field-entity :current-piece)))
+    (with-ecs-components (piece) piece-entity
+      (let ((cloned-piece (make-piece-from-mouse-point field-entity)))
         (let ((shape (calc-global-piece-shape cloned-piece)))
           (with-ecs-components ((field-pnt point-2d) field) field-entity
             (let ((enable-warp-p (enable-to-warp-piece-to field cloned-piece piece)))
@@ -115,6 +122,7 @@
           (point-2d-y model-offset) (get-mouse-y))))
 
 ;; --- move piece --- ;;
+
 (defun.ps+ rotate-piece-by-wheel ()
   (process-with-field-and-piece
    (get-field-entity)
@@ -123,6 +131,12 @@
        ;; do nothing if (= wheel 0)
        (cond ((> wheel 0) (rotate-piece field piece 1))
              ((< wheel 0) (rotate-piece field piece -1)))))))
+
+(defun.ps+ process-click-input ()
+  (when (eq (get-left-mouse-state) :down-now)
+    (let ((field-entity (get-field-entity)))
+      (warp-piece-to field-entity
+                     (make-piece-from-mouse-point field-entity)))))
 
 ;; --- init --- ;;
 (defun.ps+ init-mouse-entity ()
@@ -136,7 +150,8 @@
      (make-script-2d :func (lambda (entity)
                              (update-block-frame entity)
                              (update-mouse-pointer entity)
-                             (rotate-piece-by-wheel)))
+                             (rotate-piece-by-wheel)
+                             (process-click-input)))
      (init-entity-params :models models
                          :pointer-model pointer-model))
     (dotimes (i 4)
