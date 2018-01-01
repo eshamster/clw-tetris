@@ -29,7 +29,7 @@
 (defvar.ps+ *current-sub-game-state* :start) ; :start, :run, :end
 
 (defun.ps+ process-game-state ()
-  (case *current-sub-game-state*
+  (ecase *current-sub-game-state*
     (:start (when (funcall (game-state-start-process *current-game-state*))
               (setf *current-sub-game-state* :run)))
     (:run (let ((result (funcall (game-state-process *current-game-state*))))
@@ -40,8 +40,7 @@
             (assert *next-game-state*)
             (setf *current-game-state* *next-game-state*)
             (setf *next-game-state* nil)
-            (setf *current-sub-game-state* :start)))
-    (t (error "Unknown sub game state: ~A" *current-sub-game-state*))))
+            (setf *current-sub-game-state* :start)))))
 
 (defun.ps+ init-game-state (state)
   (check-type state game-state)
