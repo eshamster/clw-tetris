@@ -14,6 +14,8 @@
 
            :piece
            :init-piece
+           :clone-piece
+           :copy-piece-to
            :piece-static-shape
            :piece-x
            :piece-y
@@ -22,6 +24,7 @@
            :rotate-static-shape
 
            :calc-global-piece-shape
+           :enable-to-move-piece-to-p
            :move-piece-to
            :rotate-piece
 
@@ -43,6 +46,14 @@
     static-shape x y rotate-count)
 
 ;; Because static-shape never be modified, shallow-copying is enough.
+(defun.ps+ copy-piece-to (dst src)
+  (macrolet ((set-param (param)
+               `(setf (,param dst) (,param src))))
+    (set-param piece-static-shape)
+    (set-param piece-x)
+    (set-param piece-y)
+    (set-param piece-rotate-count)))
+
 (defun.ps+ clone-piece (piece)
   (with-slots (static-shape x y rotate-count) piece
     (make-piece :static-shape static-shape
@@ -152,7 +163,9 @@
       (ecase direction
         (:down (decf (cadr point)))
         (:right (incf (car point)))
-        (:left (decf (car point)))))
+        (:left (decf (car point)))
+        (:there ; do nothing
+         )))
     (every (lambda (point)
              (let ((x (car point))
                    (y (cadr point)))
@@ -171,7 +184,9 @@ Return t if the piece was moved, otherwize nil"
       (ecase direction
         (:down (decf y))
         (:right (incf x))
-        (:left (decf x))))
+        (:left (decf x))
+        (:there ; do nothing
+         )))
     t))
 
 (defun.ps+ intersect-piece-to-field-p (field piece)

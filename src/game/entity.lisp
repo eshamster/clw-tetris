@@ -5,7 +5,9 @@
         :cl-ps-ecs
         :cl-web-2d-game
         :clw-tetris.game.basic-operation)
-  (:export :init-tetris-entities))
+  (:export :init-tetris-entities
+           :process-with-field-and-piece
+           :warp-piece-to))
 (in-package :clw-tetris.game.entity)
 
 ;; --- parameters --- ;;
@@ -34,11 +36,28 @@
       (with-ecs-components (piece) piece-entity
         (funcall fn-process field piece)))))
 
+(defun.ps+ reset-piece-down-interval (piece-entity)
+  (set-entity-param piece-entity :rest-intv
+                    (get-entity-param piece-entity :intv)))
+
+(defun.ps+ warp-piece-to (field-entity new-piece)
+  (check-type new-piece piece)
+  (process-with-field-and-piece
+   field-entity
+   (lambda (field current-piece)
+     (let ((current-y (piece-y current-piece))
+           (new-y (piece-y new-piece)))
+       (when (> new-y current-y)
+         (error "A piece can't move to up (before: ~A, after: ~A)" current-y new-y))
+       (when (move-piece-to field new-piece :there)
+         (when (< new-y current-y)
+           (reset-piece-down-interval (get-entity-param field-entity :current-piece)))
+         (copy-piece-to current-piece new-piece))))))
+
 (defun.ps+ down-piece-entity (field-entity)
   (check-entity-tags field-entity :field)
   (let ((piece-entity (get-entity-param field-entity :current-piece)))
-    (set-entity-param piece-entity :rest-intv
-                      (get-entity-param piece-entity :intv))
+    (reset-piece-down-interval piece-entity)
     (process-with-field-and-piece
      field-entity
      (lambda (field piece)
@@ -196,7 +215,11 @@
      entity
      field
      (make-point-2d :x x-offset :y y-offset)
-     (init-entity-params :block-model-array block-model-array)
+     (init-entity-params :block-model-array block-model-array
+                         :x-count x-count
+                         :y-count y-count
+                         :block-width block-width
+                         :block-height block-height)
      (make-script-2d :func fn-script)
      (make-model-2d :model (make-solid-rect :width (* x-count block-width)
                                             :height (* y-count block-height)
