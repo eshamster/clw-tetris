@@ -5,7 +5,8 @@
         :cl-ps-ecs
         :cl-web-2d-game
         :clw-tetris.game.basic-operation)
-  (:export :init-tetris-entities))
+  (:export :init-tetris-entities
+           :process-with-field-and-piece))
 (in-package :clw-tetris.game.entity)
 
 ;; --- parameters --- ;;

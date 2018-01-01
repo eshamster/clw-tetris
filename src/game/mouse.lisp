@@ -12,7 +12,10 @@
                 :clone-piece
                 :piece-x
                 :piece-y
-                :field))
+                :rotate-piece
+                :field)
+  (:import-from :clw-tetris.game.entity
+                :process-with-field-and-piece))
 (in-package :clw-tetris.game.mouse)
 
 (defvar.ps+ *normal-block-frame-color* #x00ffff)
@@ -111,6 +114,16 @@
     (setf (point-2d-x model-offset) (get-mouse-x)
           (point-2d-y model-offset) (get-mouse-y))))
 
+;; --- move piece --- ;;
+(defun.ps+ rotate-piece-by-wheel ()
+  (process-with-field-and-piece
+   (get-field-entity)
+   (lambda (field piece)
+     (let ((wheel (get-mouse-wheel-delta-y)))
+       ;; do nothing if (= wheel 0)
+       (cond ((> wheel 0) (rotate-piece field piece 1))
+             ((< wheel 0) (rotate-piece field piece -1)))))))
+
 ;; --- init --- ;;
 (defun.ps+ init-mouse-entity ()
   (let ((entity (make-ecs-entity))
@@ -122,7 +135,8 @@
      pointer-model
      (make-script-2d :func (lambda (entity)
                              (update-block-frame entity)
-                             (update-mouse-pointer entity)))
+                             (update-mouse-pointer entity)
+                             (rotate-piece-by-wheel)))
      (init-entity-params :models models
                          :pointer-model pointer-model))
     (dotimes (i 4)
