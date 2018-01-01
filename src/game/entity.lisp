@@ -196,7 +196,11 @@
      entity
      field
      (make-point-2d :x x-offset :y y-offset)
-     (init-entity-params :block-model-array block-model-array)
+     (init-entity-params :block-model-array block-model-array
+                         :x-count x-count
+                         :y-count y-count
+                         :block-width block-width
+                         :block-height block-height)
      (make-script-2d :func fn-script)
      (make-model-2d :model (make-solid-rect :width (* x-count block-width)
                                             :height (* y-count block-height)

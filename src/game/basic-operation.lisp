@@ -14,6 +14,7 @@
 
            :piece
            :init-piece
+           :clone-piece
            :piece-static-shape
            :piece-x
            :piece-y
