@@ -23,6 +23,7 @@
            :rotate-static-shape
 
            :calc-global-piece-shape
+           :enable-to-move-piece-to-p
            :move-piece-to
            :rotate-piece
 
@@ -153,7 +154,9 @@
       (ecase direction
         (:down (decf (cadr point)))
         (:right (incf (car point)))
-        (:left (decf (car point)))))
+        (:left (decf (car point)))
+        (:there ; do nothing
+         )))
     (every (lambda (point)
              (let ((x (car point))
                    (y (cadr point)))

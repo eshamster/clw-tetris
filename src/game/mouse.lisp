@@ -7,13 +7,16 @@
   (:export :init-mouse-entity)
   (:import-from :clw-tetris.game.basic-operation
                 :calc-global-piece-shape
+                :enable-to-move-piece-to-p
                 :piece
                 :clone-piece
                 :piece-x
-                :piece-y))
+                :piece-y
+                :field))
 (in-package :clw-tetris.game.mouse)
 
 (defvar.ps+ *normal-block-frame-color* #x00ffff)
+(defvar.ps+ *ng-block-frame-color* #xff0000)
 (defvar.ps+ *block-frame-depth* 20)
 
 (defvar.ps+ *mouse-pointer-r* 3)
@@ -59,11 +62,27 @@
                    :offset (make-point-2d :x -99999 :y -99999)
                    :depth *block-frame-depth*)))
 
+(defun.ps+ enable-to-warp-piece-to (field piece current-piece)
+  (and (enable-to-move-piece-to-p field piece :there)
+       (<= (piece-y piece) (piece-y current-piece))))
+
+(defun.ps+ update-one-block-model (&key model field-entity field-pnt
+                                        point-in-shape enable-warp-p)
+  (let ((model-offset (model-2d-offset model))
+        (block-width (get-block-width field-entity))
+        (block-height (get-block-height field-entity)))
+    (setf (point-2d-x model-offset)
+          (+ (* (car point-in-shape) block-width) (point-2d-x field-pnt)))
+    (setf (point-2d-y model-offset)
+          (+ (* (cadr point-in-shape) block-height) (point-2d-y field-pnt)))
+    (change-model-color model
+                        (if enable-warp-p
+                            *normal-block-frame-color*
+                            *ng-block-frame-color*))))
+
 (defun.ps+ update-block-frame (mouse-entity)
   (let* ((models (get-entity-param mouse-entity :models))
          (field-entity (get-field-entity))
-         (block-width (get-block-width field-entity))
-         (block-height (get-block-height field-entity))
          (piece-entity (get-entity-param field-entity :current-piece)))
     (with-ecs-components (piece) piece-entity
       (let ((cloned-piece (clone-piece piece)))
@@ -71,15 +90,13 @@
           (setf (piece-x cloned-piece) x
                 (piece-y cloned-piece) y))
         (let ((shape (calc-global-piece-shape cloned-piece)))
-          (with-ecs-components ((field-pnt point-2d)) field-entity
-            (dotimes (i (length models))
-              (let* ((model (nth i models))
-                     (model-offset (model-2d-offset model))
-                     (point (nth i shape)))
-                (setf (point-2d-x model-offset)
-                      (+ (* (car point) block-width) (point-2d-x field-pnt)))
-                (setf (point-2d-y model-offset)
-                      (+ (* (cadr point) block-height) (point-2d-y field-pnt)))))))))))
+          (with-ecs-components ((field-pnt point-2d) field) field-entity
+            (let ((enable-warp-p (enable-to-warp-piece-to field cloned-piece piece)))
+              (dotimes (i (length models))
+                (update-one-block-model
+                 :model (nth i models) :point-in-shape (nth i shape)
+                 :field-entity field-entity :field-pnt field-pnt
+                 :enable-warp-p enable-warp-p)))))))))
 
 ;; --- mouse pointer --- ;;
 (defun.ps+ make-mouse-pointer-model ()
