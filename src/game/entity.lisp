@@ -60,6 +60,16 @@
            (reset-piece-down-interval (get-entity-param field-entity :current-piece)))
          (copy-piece-to current-piece new-piece))))))
 
+(defun.ps+ swap-piece-to-next (field-entity field)
+  (let ((next-piece-entity (get-entity-param field-entity :next-piece)))
+    (add-ecs-entity-to-buffer next-piece-entity)
+    (set-entity-param field-entity :current-piece next-piece-entity)
+    (set-entity-param field-entity :next-piece
+                      (make-piece-entity field))
+    (with-ecs-components ((next-piece piece)) next-piece-entity
+      (when (intersect-piece-to-field-p field next-piece)
+        (change-field-entity-to-gameover field-entity)))))
+
 (defun.ps+ down-piece-entity (field-entity)
   (check-entity-tags field-entity :field)
   (let ((piece-entity (get-entity-param field-entity :current-piece)))
@@ -72,14 +82,7 @@
                                      (when (find-the-entity piece-entity)
                                        (delete-ecs-entity piece-entity))))
          (if (pin-piece-to-field field current-piece)
-             (let ((next-piece-entity (get-entity-param field-entity :next-piece)))
-               (add-ecs-entity-to-buffer next-piece-entity)
-               (set-entity-param field-entity :current-piece next-piece-entity)
-               (set-entity-param field-entity :next-piece
-                                 (make-piece-entity field))
-               (with-ecs-components ((next-piece piece)) next-piece-entity
-                 (when (intersect-piece-to-field-p field next-piece)
-                   (change-field-entity-to-gameover field-entity))))
+             (swap-piece-to-next field-entity field)
              (change-field-entity-to-gameover field-entity)))))))
 
 (defun.ps+ move-piece-by-input (field-entity)
