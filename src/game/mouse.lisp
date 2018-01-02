@@ -16,7 +16,8 @@
                 :field)
   (:import-from :clw-tetris.game.entity
                 :process-with-field-and-piece
-                :warp-piece-to))
+                :warp-piece-to
+                :gameover-p))
 (in-package :clw-tetris.game.mouse)
 
 (defvar.ps+ *normal-block-frame-color* #x00ffff)
@@ -66,8 +67,9 @@
                    :offset (make-point-2d :x -99999 :y -99999)
                    :depth *block-frame-depth*)))
 
-(defun.ps+ enable-to-warp-piece-to (field piece current-piece)
-  (and (enable-to-move-piece-to-p field piece :there)
+(defun.ps+ enable-to-warp-piece-to (field-entity field piece current-piece)
+  (and (not (gameover-p field-entity))
+       (enable-to-move-piece-to-p field piece :there)
        (<= (piece-y piece) (piece-y current-piece))))
 
 (defun.ps+ update-one-block-model (&key model field-entity field-pnt
@@ -101,7 +103,8 @@
       (let ((cloned-piece (make-piece-from-mouse-point field-entity)))
         (let ((shape (calc-global-piece-shape cloned-piece)))
           (with-ecs-components ((field-pnt point-2d) field) field-entity
-            (let ((enable-warp-p (enable-to-warp-piece-to field cloned-piece piece)))
+            (let ((enable-warp-p (enable-to-warp-piece-to field-entity field
+                                                          cloned-piece piece)))
               (dotimes (i (length models))
                 (update-one-block-model
                  :model (nth i models) :point-in-shape (nth i shape)

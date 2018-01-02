@@ -7,7 +7,8 @@
         :clw-tetris.game.basic-operation)
   (:export :init-tetris-entities
            :process-with-field-and-piece
-           :warp-piece-to))
+           :warp-piece-to
+           :gameover-p))
 (in-package :clw-tetris.game.entity)
 
 ;; --- parameters --- ;;
@@ -28,6 +29,9 @@
 (defun.ps+ change-field-entity-to-gameover (field-entity)
   (set-entity-param field-entity :gameover-p t))
 
+(defun.ps+ gameover-p (field-entity)
+  (get-entity-param field-entity :gameover-p))
+
 ;; --- moving --- ;;
 
 (defun.ps+ process-with-field-and-piece (field-entity fn-process)
@@ -41,6 +45,8 @@
                     (get-entity-param piece-entity :intv)))
 
 (defun.ps+ warp-piece-to (field-entity new-piece)
+  (when (gameover-p field-entity)
+    (return-from warp-piece-to))
   (check-type new-piece piece)
   (process-with-field-and-piece
    field-entity
@@ -60,16 +66,18 @@
     (reset-piece-down-interval piece-entity)
     (process-with-field-and-piece
      field-entity
-     (lambda (field piece)
-       (unless (move-piece-to field piece :down)
+     (lambda (field current-piece)
+       (unless (move-piece-to field current-piece :down)
          (register-next-frame-func (lambda ()
-                                     (delete-ecs-entity piece-entity)))
-         (if (pin-piece-to-field field piece)
+                                     (when (find-the-entity piece-entity)
+                                       (delete-ecs-entity piece-entity))))
+         (if (pin-piece-to-field field current-piece)
              (let ((next-piece-entity (get-entity-param field-entity :next-piece)))
                (add-ecs-entity-to-buffer next-piece-entity)
                (set-entity-param field-entity :current-piece next-piece-entity)
                (set-entity-param field-entity :next-piece
                                  (make-piece-entity field))
+               (set-entity-param field-entity :next-piece)
                (with-ecs-components ((next-piece piece)) next-piece-entity
                  (when (intersect-piece-to-field-p field next-piece)
                    (change-field-entity-to-gameover field-entity))))
@@ -247,7 +255,7 @@
 ;; - field -
 (defun.ps+ update-field (field-entity)
   (check-entity-tags field-entity :field)
-  (unless (get-entity-param field-entity :gameover-p)
+  (unless (gameover-p field-entity)
     (process-tetris-input field-entity)
     (fall-in-natural field-entity))
   (update-field-draw field-entity #'calc-block-exist-array-of-field))
