@@ -77,7 +77,6 @@
                (set-entity-param field-entity :current-piece next-piece-entity)
                (set-entity-param field-entity :next-piece
                                  (make-piece-entity field))
-               (set-entity-param field-entity :next-piece)
                (with-ecs-components ((next-piece piece)) next-piece-entity
                  (when (intersect-piece-to-field-p field next-piece)
                    (change-field-entity-to-gameover field-entity))))
