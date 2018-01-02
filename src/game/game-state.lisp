@@ -17,9 +17,9 @@
 (in-package :clw-tetris.game.game-state)
 
 (defstruct.ps+ game-state
-  (start-process (lambda () t))
-  (process (lambda () nil))
-  (end-process (lambda () t)))
+  (start-process (lambda (_this) (declare (ignore _this)) t))
+  (process (lambda (_this) (declare (ignore _this)) nil))
+  (end-process (lambda (_this) (declare (ignore _this)) t)))
 
 (defun.ps+ make-empty-game-state ()
   (make-game-state))
@@ -30,13 +30,16 @@
 
 (defun.ps+ process-game-state ()
   (ecase *current-sub-game-state*
-    (:start (when (funcall (game-state-start-process *current-game-state*))
+    (:start (when (funcall (game-state-start-process *current-game-state*)
+                           *current-game-state*)
               (setf *current-sub-game-state* :run)))
-    (:run (let ((result (funcall (game-state-process *current-game-state*))))
+    (:run (let ((result (funcall (game-state-process *current-game-state*)
+                                 *current-game-state*)))
             (when result
               (setf *current-sub-game-state* :end)
               (setf *next-game-state* result))))
-    (:end (when (funcall (game-state-end-process *current-game-state*))
+    (:end (when (funcall (game-state-end-process *current-game-state*)
+                         *current-game-state*)
             (assert *next-game-state*)
             (setf *current-game-state* *next-game-state*)
             (setf *next-game-state* nil)
