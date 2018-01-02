@@ -43,7 +43,7 @@
     x-count y-count block-state-array)
 
 (defstruct.ps+ (piece (:include ecs-component))
-    static-shape x y rotate-count)
+    static-shape x y rotate-count rotatable)
 
 ;; Because static-shape never be modified, shallow-copying is enough.
 (defun.ps+ copy-piece-to (dst src)
@@ -107,27 +107,35 @@
 
 ;; --- piece functions --- ;;
 
+(defstruct.ps+ static-shape-param point-list (rotatable t))
+
 ;; Note: (0 0) is a center of rotation
 (defvar.ps+ *static-shape-list*
-    '(;; ----
-      ((-1 0) (0 0) (1 0) (2 0))
-      ;; _|^
-      ((-1 0) (0 0) (0 1) (1 1))
-      ;; |-
-      ((0 -1) (0 0) (1 0) (0 1))
-      ;; __|
-      ((-2 0) (-1 0) (0 0) (0 1))
-      ;; |__
-      ((-1 1) (-1 0) (0 0) (1 0))
-      ;; =
-      ((0 0) (0 1) (1 0) (1 1))))
+    (list
+     ;; ----
+     (make-static-shape-param :point-list '((-1 0) (0 0) (1 0) (2 0)))
+     ;; _|^
+     (make-static-shape-param :point-list '((-1 0) (0 0) (0 1) (1 1)))
+     ;; |-
+     (make-static-shape-param :point-list '((0 -1) (0 0) (1 0) (0 1)))
+     ;; __|
+     (make-static-shape-param :point-list '((-2 0) (-1 0) (0 0) (0 1)))
+     ;; |__
+     (make-static-shape-param :point-list '((-1 1) (-1 0) (0 0) (1 0)))
+     ;; =
+     (make-static-shape-param :point-list '((0 0) (0 1) (1 0) (1 1))
+                              :rotatable nil)))
 
 (defun.ps+ init-piece (field)
-  (let* ((piece (make-piece :x (/ (field-x-count field) 2)
+  (let* ((static-shape (nth (random (length *static-shape-list*))
+                            *static-shape-list*))
+         (rotatable (static-shape-param-rotatable static-shape))
+         (piece (make-piece :x (/ (field-x-count field) 2)
                             :y 0 ; temporal value
-                            :static-shape (nth (random (length *static-shape-list*))
-                                               *static-shape-list*)
-                            :rotate-count (random 4)))
+                            :static-shape (static-shape-param-point-list
+                                           static-shape)
+                            :rotatable rotatable
+                            :rotate-count (if rotatable (random 4) 0)))
          (global-shape (calc-global-piece-shape piece))
          (min-y (cadr (aref global-shape 0))))
     (loop for i from 1 below (length global-shape)
@@ -138,7 +146,6 @@
           (- (field-y-count field) min-y 1))
     piece))
 
-;; TODO: Don't rotate the rect shape.
 (defun.ps+ rotate-static-shape (shape rotate-count)
   (mapcar (lambda (point)
             (let ((x (car point))
@@ -200,6 +207,8 @@ Return t if the piece was moved, otherwize nil"
         (calc-global-piece-shape piece)))
 
 (defun.ps+ rotate-piece (field piece added-rotate-count)
+  (unless (piece-rotatable piece)
+    (return-from rotate-piece t))
   (let ((cloned-piece (clone-piece piece)))
     (with-slots (rotate-count x) cloned-piece
       (setf rotate-count (mod (+ rotate-count added-rotate-count) 4))
