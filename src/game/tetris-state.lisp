@@ -8,7 +8,9 @@
         :clw-tetris.game.entity)
   (:export :make-tetris-start-state)
   (:import-from :clw-tetris.game.mouse
-                :init-mouse-entity))
+                :init-mouse-entity)
+  (:import-from :clw-tetris.game.score
+                :init-score-manager))
 (in-package :clw-tetris.game.tetris-state)
 
 (defstruct.ps+
@@ -19,6 +21,7 @@
                   (declare (ignore _this))
                   (init-tetris-entities)
                   (init-mouse-entity)
+                  (init-score-manager)
                   t)))))
 
 (defstruct.ps+

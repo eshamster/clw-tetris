@@ -29,7 +29,9 @@
            :rotate-piece
 
            :intersect-piece-to-field-p
-           :pin-piece-to-field))
+           :pin-piece-to-field
+
+           :add-after-deleted-lines-hook))
 (in-package :clw-tetris.game.basic-operation)
 
 ;; TODO: Consider mirrored shapes
@@ -228,6 +230,11 @@ Return t if the piece was moved, otherwize nil"
               (piece-x piece) x)
         t))))
 
+(defvar.ps+ *after-deleted-lines-hooks* '())
+
+(defun.ps+ add-after-deleted-lines-hook (callback)
+  (pushnew callback *after-deleted-lines-hooks*))
+
 (defun.ps+ pin-piece-to-field (field piece)
   "Pin the piece to the field. After pinning, delete completed lines.
 Return nil if game over situation."
@@ -250,4 +257,7 @@ Return nil if game over situation."
              (count-deleted (delete-completed-lines field))
              (rest-blocks
               (pin-all-blocks-to-field field pending-blocks count-deleted)))
+        (when (> count-deleted 0)
+          (dolist (hook *after-deleted-lines-hooks*)
+            (funcall hook count-deleted)))
         (= (length rest-blocks) 0)))))

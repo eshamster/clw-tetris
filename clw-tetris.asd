@@ -31,6 +31,7 @@
                 ((:file "basic-operation")
                  (:file "entity")
                  (:file "mouse")
+                 (:file "score")
                  (:file "game-state")
                  (:file "tetris-state")
                  (:file "game")))
