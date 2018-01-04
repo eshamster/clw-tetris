@@ -12,14 +12,14 @@
 ("cl-ps-ecs" .
  (:class qlot.source.github:source-github
   :initargs (:project-name "cl-ps-ecs" :repos "eshamster/cl-ps-ecs" :ref nil :branch nil :tag nil)
-  :version "github-d2b50018d7b134c7856f576ca144adff9abc8ecd"
+  :version "github-f6a6da09d44fa0c37d7435f1b2cba1834b4367f1"
   :repos "eshamster/cl-ps-ecs"
-  :url "https://github.com/eshamster/cl-ps-ecs/archive/d2b50018d7b134c7856f576ca144adff9abc8ecd.tar.gz"
-  :ref "d2b50018d7b134c7856f576ca144adff9abc8ecd"))
+  :url "https://github.com/eshamster/cl-ps-ecs/archive/f6a6da09d44fa0c37d7435f1b2cba1834b4367f1.tar.gz"
+  :ref "f6a6da09d44fa0c37d7435f1b2cba1834b4367f1"))
 ("cl-web-2d-game" .
  (:class qlot.source.github:source-github
   :initargs (:project-name "cl-web-2d-game" :repos "eshamster/cl-web-2d-game" :ref nil :branch nil :tag nil)
-  :version "github-8ae2dec9c3ab1e99817e1d1ef4f797a110d51764"
+  :version "github-44bcc90ad075fad3fc0ab5123aa7287f901799ad"
   :repos "eshamster/cl-web-2d-game"
-  :url "https://github.com/eshamster/cl-web-2d-game/archive/8ae2dec9c3ab1e99817e1d1ef4f797a110d51764.tar.gz"
-  :ref "8ae2dec9c3ab1e99817e1d1ef4f797a110d51764"))
+  :url "https://github.com/eshamster/cl-web-2d-game/archive/44bcc90ad075fad3fc0ab5123aa7287f901799ad.tar.gz"
+  :ref "44bcc90ad075fad3fc0ab5123aa7287f901799ad"))
