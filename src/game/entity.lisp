@@ -15,9 +15,12 @@
 
 (defvar.ps+ *global-params*
     (convert-to-layered-hash
-     (:block (:width 20
-              :height 20
+     (:block (:width 30
+              :height 30
               :margin 2)
+      :field (:x-count 10
+              :y-count 15)
+      :next-piece-area (:dist-from-field 30)
       :input (:first-intv 15
               :intv 4))))
 
@@ -126,9 +129,14 @@
 
 ;; --- drawing --- ;;
 
+;; We assume that 5x5 area can cover any pieces,
+;; if (0,0) of the piece is at the center of the area.
+(defvar.ps+ *next-piece-area-length* 5)
+
 (defun.ps+ calc-block-exist-array-of-next (entity)
   (check-entity-tags entity :next-area)
-  (let* ((result (make-array 25 :initial-element nil))
+  (let* ((result (make-array (expt *next-piece-area-length* 2)
+                             :initial-element nil))
          (field-entity (get-entity-param entity :field-entity))
          (piece-entity (get-entity-param field-entity :next-piece))
          (shape nil))
@@ -138,7 +146,7 @@
     (dolist (point shape)
       (let* ((x (car point))
              (y (cadr point))
-             (index (+ (+ x 2) (* 5 (+ y 2)))))
+             (index (+ (+ x 2) (* *next-piece-area-length* (+ y 2)))))
         (setf (aref result index) t)))
     result))
 
@@ -244,10 +252,9 @@
 
 (defun.ps+ make-next-piece-area-entity (x y field-entity)
   (check-entity-tags field-entity :field)
-  ;; We assume that 5x5 area can cover any pieces,
-  ;; if (0,0) of the piece is at the center of the area.
   (let ((entity (make-piece-display-entity
-                 :x-count 5 :y-count 5
+                 :x-count *next-piece-area-length*
+                 :y-count *next-piece-area-length*
                  :x-offset x :y-offset y
                  :fn-script #'update-next-piece-area)))
     (add-entity-tag entity :next-area)
@@ -265,8 +272,12 @@
 (defun.ps+ make-field-entity (&key x-count y-count)
   (let ((entity (make-piece-display-entity
                  :x-count x-count :y-count y-count
-                 ;; TODO: Parameterize
-                 :x-offset 10 :y-offset 10
+                 :x-offset (/ (- (get-screen-width)
+                                 (* x-count (get-param :block :width)))
+                              2)
+                 :y-offset (/ (- (get-screen-height)
+                                 (* y-count (get-param :block :height)))
+                              2)
                  :fn-script #'update-field)))
     (add-entity-tag entity :field)
     (with-ecs-components (field) entity
@@ -277,11 +288,18 @@
 
 ;; - initalize all entities -
 (defun.ps+ init-tetris-entities ()
-  (let* ((field-entity (make-field-entity
-                        :x-count 10
-                        :y-count 15))
+  (let* ((x-count (get-param :field :x-count))
+         (y-count (get-param :field :y-count))
+         (field-entity (make-field-entity
+                        :x-count x-count
+                        :y-count y-count))
          (field (get-ecs-component 'field field-entity))
-         (next-piece-area (make-next-piece-area-entity 300 300 field-entity)))
+         (next-piece-area (make-next-piece-area-entity
+                           (+ (* x-count (get-param :block :width))
+                              (get-param :next-piece-area :dist-from-field))
+                           (* (- y-count (1+ *next-piece-area-length*))
+                              (get-param :block :height))
+                           field-entity)))
     (assert field)
     (add-ecs-entity field-entity)
     (add-ecs-entity (get-entity-param field-entity :current-piece))

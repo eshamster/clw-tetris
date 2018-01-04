@@ -16,6 +16,4 @@
   (init-input))
 
 (defun.ps+ update-func ()
-  (process-game-state)
-  (do-ecs-entities entity
-    (add-to-monitoring-log (ecs-entity-id entity))))
+  (process-game-state))
