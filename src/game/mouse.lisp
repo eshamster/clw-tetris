@@ -17,6 +17,7 @@
   (:import-from :clw-tetris.game.entity
                 :process-with-field-and-piece
                 :warp-piece-to
+                :down-piece-entity
                 :gameover-p))
 (in-package :clw-tetris.game.mouse)
 
@@ -136,10 +137,13 @@
              ((< wheel 0) (rotate-piece field piece -1)))))))
 
 (defun.ps+ process-click-input ()
-  (when (eq (get-left-mouse-state) :down-now)
-    (let ((field-entity (get-field-entity)))
+  (let ((field-entity (get-field-entity)))
+    (when (eq (get-left-mouse-state) :down-now)
       (warp-piece-to field-entity
-                     (make-piece-from-mouse-point field-entity)))))
+                     (make-piece-from-mouse-point field-entity)))
+    (add-to-event-log (get-right-mouse-state))
+    (when (eq (get-right-mouse-state) :down-now)
+      (down-piece-entity field-entity))))
 
 ;; --- init --- ;;
 (defun.ps+ init-mouse-entity ()

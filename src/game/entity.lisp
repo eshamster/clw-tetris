@@ -7,6 +7,7 @@
         :clw-tetris.game.basic-operation)
   (:export :init-tetris-entities
            :process-with-field-and-piece
+           :down-piece-entity
            :warp-piece-to
            :gameover-p))
 (in-package :clw-tetris.game.entity)
