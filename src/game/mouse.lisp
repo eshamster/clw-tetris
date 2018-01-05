@@ -141,7 +141,6 @@
     (when (eq (get-left-mouse-state) :down-now)
       (warp-piece-to field-entity
                      (make-piece-from-mouse-point field-entity)))
-    (add-to-event-log (get-right-mouse-state))
     (when (eq (get-right-mouse-state) :down-now)
       (down-piece-entity field-entity))))
 
