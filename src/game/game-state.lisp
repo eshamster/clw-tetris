@@ -1,5 +1,4 @@
-(in-package :cl-user)
-(defpackage clw-tetris.game.game-state
+(defpackage clw-tetris/src/game/game-state
   (:use :cl
         :ps-experiment
         :cl-ps-ecs
@@ -14,7 +13,7 @@
            :process
            :game-state-end-process
            :end-process))
-(in-package :clw-tetris.game.game-state)
+(in-package :clw-tetris/src/game/game-state)
 
 (defstruct.ps+ game-state
   (start-process (lambda (_this) (declare (ignore _this)) t))

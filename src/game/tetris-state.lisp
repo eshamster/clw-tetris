@@ -1,17 +1,16 @@
-(in-package :cl-user)
-(defpackage clw-tetris.game.tetris-state
+(defpackage clw-tetris/src/game/tetris-state
   (:use :cl
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game
-        :clw-tetris.game.game-state
-        :clw-tetris.game.entity)
+        :clw-tetris/src/game/game-state
+        :clw-tetris/src/game/entity)
   (:export :make-tetris-start-state)
-  (:import-from :clw-tetris.game.mouse
+  (:import-from :clw-tetris/src/game/mouse
                 :init-mouse-entity)
-  (:import-from :clw-tetris.game.score
+  (:import-from :clw-tetris/src/game/score
                 :init-score-manager))
-(in-package :clw-tetris.game.tetris-state)
+(in-package :clw-tetris/src/game/tetris-state)
 
 (defstruct.ps+
     (tetris-main-state

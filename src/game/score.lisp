@@ -1,13 +1,12 @@
-(in-package :cl-user)
-(defpackage clw-tetris.game.score
+(defpackage clw-tetris/src/game/score
   (:use :cl
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game)
   (:export :init-score-manager)
-  (:import-from :clw-tetris.game.basic-operation
+  (:import-from :clw-tetris/src/game/basic-operation
                 :add-after-deleted-lines-hook))
-(in-package :clw-tetris.game.score)
+(in-package :clw-tetris/src/game/score)
 
 (defvar.ps+ *max-score* 99999)
 

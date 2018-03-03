@@ -1,11 +1,10 @@
-(in-package :cl-user)
-(defpackage clw-tetris.server
+(defpackage clw-tetris/src/server
   (:use :cl
         :cl-web-2d-game
         :cl-markup
-        :clw-tetris.game)
+        :clw-tetris/src/game/game)
   (:export :start))
-(in-package :clw-tetris.server)
+(in-package :clw-tetris/src/server)
 
 ;; --- Definitions about directories --- ;;
 

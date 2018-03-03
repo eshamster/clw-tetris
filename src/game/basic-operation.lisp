@@ -1,5 +1,4 @@
-(in-package :cl-user)
-(defpackage clw-tetris.game.basic-operation
+(defpackage clw-tetris/src/game/basic-operation
   (:use :cl
         :ps-experiment
         :cl-ps-ecs
@@ -32,7 +31,7 @@
            :pin-piece-to-field
 
            :add-after-deleted-lines-hook))
-(in-package :clw-tetris.game.basic-operation)
+(in-package :clw-tetris/src/game/basic-operation)
 
 ;; TODO: Consider mirrored shapes
 

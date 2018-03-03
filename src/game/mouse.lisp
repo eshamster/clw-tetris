@@ -1,11 +1,10 @@
-(in-package :cl-user)
-(defpackage clw-tetris.game.mouse
+(defpackage clw-tetris/src/game/mouse
   (:use :cl
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game)
   (:export :init-mouse-entity)
-  (:import-from :clw-tetris.game.basic-operation
+  (:import-from :clw-tetris/src/game/basic-operation
                 :calc-global-piece-shape
                 :enable-to-move-piece-to-p
                 :piece
@@ -14,12 +13,12 @@
                 :piece-y
                 :rotate-piece
                 :field)
-  (:import-from :clw-tetris.game.entity
+  (:import-from :clw-tetris/src/game/entity
                 :process-with-field-and-piece
                 :warp-piece-to
                 :down-piece-entity
                 :gameover-p))
-(in-package :clw-tetris.game.mouse)
+(in-package :clw-tetris/src/game/mouse)
 
 (defvar.ps+ *normal-block-frame-color* #x00ffff)
 (defvar.ps+ *ng-block-frame-color* #xff0000)

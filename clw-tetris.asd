@@ -16,6 +16,8 @@
 
 (defsystem clw-tetris
   :version "0.1"
+  :class :package-inferred-system
+  :defsystem-depends-on (:asdf-package-system)
   :author "eshamster"
   :license "LLGPL"
   :depends-on (:parenscript
@@ -24,23 +26,8 @@
                :cl-web-2d-game
                :ningle
                :cl-markup
-               :clack)
-  :components ((:module "src/game"
-                :serial t
-                :components
-                ((:file "basic-operation")
-                 (:file "entity")
-                 (:file "mouse")
-                 (:file "score")
-                 (:file "game-state")
-                 (:file "tetris-state")
-                 (:file "game")))
-               (:module "src"
-                :serial t
-                :components
-                ((:file "server")
-                 (:file "clw-tetris"))
-                :depends-on ("src/game")))
+               :clack
+               :clw-tetris/src/clw-tetris)
   :description "Sample tetris written in Common Lisp for web"
   :long-description
   #.(with-open-file (stream (merge-pathnames

@@ -1,4 +1,4 @@
-(in-package :cl-user)
-(defpackage clw-tetris
-  (:use :clw-tetris.server)
+(defpackage clw-tetris/src/clw-tetris
+  (:nicknames :clw-tetris)
+  (:use :clw-tetris/src/server)
   (:export :start))

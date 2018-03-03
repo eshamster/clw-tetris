@@ -1,14 +1,13 @@
-(in-package :cl-user)
-(defpackage clw-tetris.game
+(defpackage clw-tetris/src/game/game
   (:use :cl
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game
-        :clw-tetris.game.game-state
-        :clw-tetris.game.tetris-state)
+        :clw-tetris/src/game/game-state
+        :clw-tetris/src/game/tetris-state)
   (:export :init-func
            :update-func))
-(in-package :clw-tetris.game)
+(in-package :clw-tetris/src/game/game)
 
 (defun.ps+ init-func (scene)
   (init-game-state (make-tetris-start-state))

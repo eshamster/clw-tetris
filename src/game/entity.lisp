@@ -1,16 +1,15 @@
-(in-package :cl-user)
-(defpackage clw-tetris.game.entity
+(defpackage clw-tetris/src/game/entity
   (:use :cl
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game
-        :clw-tetris.game.basic-operation)
+        :clw-tetris/src/game/basic-operation)
   (:export :init-tetris-entities
            :process-with-field-and-piece
            :down-piece-entity
            :warp-piece-to
            :gameover-p))
-(in-package :clw-tetris.game.entity)
+(in-package :clw-tetris/src/game/entity)
 
 ;; --- parameters --- ;;
 
