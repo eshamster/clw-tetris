@@ -3,7 +3,8 @@
         :cl-web-2d-game
         :cl-markup
         :clw-tetris/src/game/game)
-  (:export :start))
+  (:export :start
+           :stop))
 (in-package :clw-tetris/src/server)
 
 ;; --- Definitions about directories --- ;;
