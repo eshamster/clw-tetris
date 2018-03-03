@@ -5,10 +5,18 @@
         :prove))
 (in-package :clw-tetris-test)
 
-;; NOTE: To run this test file, execute `(asdf:test-system :clw-tetris)' in your Lisp.
+(plan 1)
 
-(plan nil)
+(defvar *port* 21464)
 
-;; blah blah blah.
+;; Only test connection
+(unwind-protect
+     (progn
+       (clw-tetris:start :port *port*)
+       (handler-case
+           (ok (dex:get (format nil "http://localhost:~D" *port*)))
+         (error (e)
+           (fail (format nil "~A" e)))))
+  (clw-tetris:stop))
 
 (finalize)

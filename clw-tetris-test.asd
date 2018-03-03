@@ -12,7 +12,8 @@
   :author "eshamster"
   :license "LLGPL"
   :depends-on (:clw-tetris
-               :prove)
+               :prove
+               :dexador)
   :components ((:module "t"
                 :components
                 ((:test-file "clw-tetris"))))
