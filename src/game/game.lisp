@@ -3,7 +3,6 @@
         :ps-experiment
         :cl-ps-ecs
         :cl-web-2d-game
-        :clw-tetris/src/game/game-state
         :clw-tetris/src/game/tetris-state)
   (:export :init-func
            :update-func))
